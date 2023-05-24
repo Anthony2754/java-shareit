@@ -17,16 +17,19 @@ import static ru.practicum.shareit.log.Logger.logExceptionWarning;
 public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class})
-    public ErrorResponse handleValidationException(Exception e) {
+    @ExceptionHandler
+    public ErrorResponse handleValidationException(ValidationException e) {
+        logExceptionWarning(e);
+        return new ErrorResponse(400, "Bad Request", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ErrorResponse handleArgumentNotValidException(MethodArgumentNotValidException e) {
         logExceptionWarning(e);
         String message;
-        if (e instanceof MethodArgumentNotValidException) {
-            MethodArgumentNotValidException eValidation = (MethodArgumentNotValidException) e;
-            message = Objects.requireNonNull(eValidation.getBindingResult().getFieldError()).getDefaultMessage();
-        } else {
-            message = e.getMessage();
-        }
+        message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
+
         return new ErrorResponse(400, "Bad Request", message);
     }
 

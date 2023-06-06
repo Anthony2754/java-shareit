@@ -1,91 +1,48 @@
 package ru.practicum.shareit.user.repository;
 
-import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exception.DuplicateException;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import ru.practicum.shareit.user.service.UserUpdateFields;
 import java.util.Map;
+import java.util.Optional;
 
-import static ru.practicum.shareit.log.Logger.logChanges;
+@Transactional
+public class UserRepositoryImpl implements CustomUserRepository {
 
-@Repository
-public class UserRepositoryImpl implements UserRepository {
-    private final Map<Long, User> users = new HashMap<>();
-    private long id;
+    private final UserRepository userRepository;
 
-    @Override
-    public User addUser(User user) {
-        if (!users.containsKey(user.getId())) {
-            checkExistEmail(user.getId(), user.getEmail());
-            generateId();
-            user.setId(id);
-            users.put(user.getId(), user);
-            logChanges("Добавлено", user.toString());
-            return user;
-        } else {
-            throw new DuplicateException(String.format("Пользователь с id %s уже существует", user.getId()));
-        }
+    public UserRepositoryImpl(@Lazy UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public User updateUserEmail(User user) {
-        long userId = user.getId();
-        checkUser(userId);
-        checkExistEmail(userId, user.getEmail());
-        users.get(userId).setEmail(user.getEmail());
-        User userStorage = users.get(userId);
-        logChanges("Обновлено", userStorage.toString());
-        return userStorage;
-    }
+    public User updateUser(User user, Map<UserUpdateFields, Boolean> targetFields) {
+        long id = user.getId();
+        Optional<User> userOptional = userRepository.findById(id);
 
-    @Override
-    public User updateUserName(User user) {
-        long userId = user.getId();
-        checkUser(userId);
-        users.get(userId).setName(user.getName());
-        User userStorage = users.get(userId);
-        logChanges("Обновлено", userStorage.toString());
-        return userStorage;
-    }
+        if (userOptional.isPresent()) {
+            User userExisting = userOptional.get();
+            String name = user.getName();
+            String email = user.getEmail();
+            User newUser;
 
-    @Override
-    public User getUserById(long userId) {
-        checkUser(userId);
-        return users.get(userId);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
-    }
-
-    @Override
-    public void deleteUserById(long userId) {
-        checkUser(userId);
-        users.remove(userId);
-        logChanges("Удалено", String.format("Пользователь с id %s", userId));
-    }
-
-    private void checkExistEmail(long userId, String email) {
-        for (User user : users.values()) {
-            if (user.getId() != userId && user.getEmail().equals(email)) {
-                throw new DuplicateException(String.format("Пользователь с email %s уже существует", email));
+            if (!targetFields.get(UserUpdateFields.NAME)) {
+                name = userExisting.getName();
             }
-        }
-    }
+            if (!targetFields.get(UserUpdateFields.EMAIL)) {
+                email = userExisting.getEmail();
+            }
+            newUser = User.builder()
+                    .id(id)
+                    .name(name)
+                    .email(email)
+                    .build();
 
-    private void checkUser(long userId) {
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException(String.format("Пользователь с id %s не найден", userId));
-        }
-    }
+            return userRepository.save(newUser);
 
-    private void generateId() {
-        id++;
+        } else throw new NotFoundException(
+                String.format("Ошибка обновления: пользователь с id=%d не найден.", id));
     }
 }
-

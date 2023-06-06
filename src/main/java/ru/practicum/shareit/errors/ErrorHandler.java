@@ -1,56 +1,108 @@
 package ru.practicum.shareit.errors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exception.DuplicateException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.exception.WrongOwnerItemException;
+import javax.validation.ConstraintViolationException;
 
-import java.util.Objects;
-
-import static ru.practicum.shareit.log.Logger.logExceptionWarning;
-
-@RestControllerAdvice
+@ControllerAdvice
+@Slf4j
 public class ErrorHandler {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler
-    public ErrorResponse handleValidationException(ValidationException e) {
-        logExceptionWarning(e);
-        return new ErrorResponse(400, "Bad Request", e.getMessage());
+    @ExceptionHandler(ValidationException.class)
+    ResponseEntity<ErrorResponse> handleValidationException(final ValidationException e) {
+        String exceptionName = e.getClass().getName();
+        String exceptionMessage = e.getMessage();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        log.debug(e.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, exceptionMessage),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler
-    public ErrorResponse handleArgumentNotValidException(MethodArgumentNotValidException e) {
-        logExceptionWarning(e);
-        String message;
-        message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+        String exceptionName = e.getClass().getName();
+        String exceptionMessage = e.getMessage();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        log.debug(e.getMessage());
 
-        return new ErrorResponse(400, "Bad Request", message);
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, exceptionMessage),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler
-    public ErrorResponse handleNotFoundException(NotFoundException e) {
-        logExceptionWarning(e);
-        return new ErrorResponse(404, "Not Found", e.getMessage());
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<ErrorResponse> handleConstraintViolationException(final ConstraintViolationException e) {
+        String exceptionName = e.getClass().getName();
+        String exceptionMessage = e.getMessage();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        int start = exceptionMessage.lastIndexOf(":") + 2;
+        exceptionMessage = e.getMessage().substring(start);
+        log.debug(e.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, exceptionMessage),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler
-    public ErrorResponse handleConflictException(DuplicateException e) {
-        logExceptionWarning(e);
-        return new ErrorResponse(409, "Conflict", e.getMessage());
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ErrorResponse> handleIllegalArgumentException(final IllegalArgumentException e) {
+        String exceptionName = e.getClass().getName();
+        String exceptionMessage = e.getMessage();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        log.debug(e.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, exceptionMessage),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        logExceptionWarning(e);
-        return new ErrorResponse(500, "Internal Server Error", "Произошла непредвиденная ошибка.");
+    @ExceptionHandler(WrongOwnerItemException.class)
+    ResponseEntity<ErrorResponse> handleForbiddenExceptions(final RuntimeException e) {
+        String exceptionName = e.getClass().getName();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        log.debug(e.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, e.getMessage()),
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    ResponseEntity<ErrorResponse> handleNotFoundExceptions(final NotFoundException e) {
+        String exceptionName = e.getClass().getName();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        log.debug(e.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, e.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(DuplicateException.class)
+    ResponseEntity<ErrorResponse> handleConflictExceptions(final DuplicateException e) {
+        String exceptionName = e.getClass().getName();
+        exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
+        log.debug(e.getMessage());
+
+        return new ResponseEntity<>(
+                new ErrorResponse(exceptionName, e.getMessage()),
+                HttpStatus.CONFLICT
+        );
     }
 }

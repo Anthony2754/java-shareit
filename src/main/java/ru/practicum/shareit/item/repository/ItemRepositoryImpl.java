@@ -1,106 +1,62 @@
 package ru.practicum.shareit.item.repository;
 
-import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exception.DuplicateException;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.WrongOwnerItemException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.ItemUpdatedFields;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-import static ru.practicum.shareit.log.Logger.logChanges;
+@Transactional
+public class ItemRepositoryImpl implements CustomItemRepository {
 
-@Repository
-public class ItemRepositoryImpl implements ItemRepository {
-    private final Map<Long, Item> items = new HashMap<>();
-    private long id;
+    private final ItemRepository repository;
 
-    @Override
-    public Item addItem(Item item) {
-        if (!items.containsKey(item.getId())) {
-            generateId();
-            item.setId(id);
-            items.put(item.getId(), item);
-            logChanges("Добавлено", item.toString());
-            return item;
-        } else {
-            throw new DuplicateException(String.format("Item с id %s уже существует", item.getId()));
-        }
+    public ItemRepositoryImpl(@Lazy ItemRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public Item updateItemName(Item item) {
+    public Item updateItem(Item item, Map<ItemUpdatedFields, Boolean> targetFields) {
         long itemId = item.getId();
-        checkItem(itemId);
-        checkOwner(item.getOwnerId(), itemId);
-        items.get(itemId).setName(item.getName());
-        Item itemStorage = items.get(itemId);
-        logChanges("Обновлено", itemStorage.toString());
-        return itemStorage;
-    }
+        long ownerId = item.getOwner().getId();
+        Optional<Item> itemOptional = repository.findById(itemId);
 
-    @Override
-    public Item updateItemDescription(Item item) {
-        long itemId = item.getId();
-        checkItem(itemId);
-        checkOwner(item.getOwnerId(), itemId);
-        items.get(itemId).setDescription(item.getDescription());
-        Item itemStorage = items.get(itemId);
-        logChanges("Обновлено", itemStorage.toString());
-        return itemStorage;
-    }
+        if (itemOptional.isPresent()) {
+            Item itemExisting = itemOptional.get();
+            if (itemExisting.getOwner().getId() != ownerId) {
+                throw new WrongOwnerItemException(String.format("Ошибка: запрос на обновление вещи с id=%d" +
+                        " исходит от пользователя, не являющегося ее владельцем.", itemId));
+            }
 
-    @Override
-    public Item updateItemAvailable(Item item) {
-        long itemId = item.getId();
-        checkItem(itemId);
-        checkOwner(item.getOwnerId(), itemId);
-        items.get(itemId).setAvailable(item.getAvailable());
-        Item itemStorage = items.get(itemId);
-        logChanges("Обновлено", itemStorage.toString());
-        return itemStorage;
-    }
+            String name = item.getName();
+            String description = item.getDescription();
+            Boolean available = item.getAvailable();
+            Item newItem;
 
-    @Override
-    public Item getItemById(long itemId) {
-        checkItem(itemId);
-        return items.get(itemId);
-    }
+            if (!targetFields.get(ItemUpdatedFields.NAME)) {
+                name = itemExisting.getName();
+            }
+            if (!targetFields.get(ItemUpdatedFields.DESCRIPTION)) {
+                description = itemExisting.getDescription();
+            }
+            if (!targetFields.get(ItemUpdatedFields.AVAILABLE)) {
+                available = itemExisting.getAvailable();
+            }
 
-    @Override
-    public List<Item> getAllItems(long ownerId) {
-        return items.values().stream()
-                .filter(item -> item.getOwnerId() == ownerId)
-                .collect(Collectors.toList());
-    }
+            newItem = Item.builder()
+                    .id(itemId)
+                    .owner(itemExisting.getOwner())
+                    .name(name)
+                    .description(description)
+                    .available(available)
+                    .build();
 
-    @Override
-    public List<Item> findByNameOrDescription(String text) {
-        return items.values().stream()
-                .filter(item -> (item.getName().toLowerCase().contains(text.toLowerCase())
-                        || item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                        && item.getAvailable())
-                .collect(Collectors.toList());
-    }
+            return repository.save(newItem);
 
-    private void checkOwner(long userId, long itemId) {
-        long ownerId = items.get(itemId).getOwnerId();
-        if (userId != ownerId) {
-            throw new NotFoundException(String.format("Пользователь с id %s не может изменить item пользователя с id %s",
-                    userId, ownerId));
-        }
-    }
-
-    private void checkItem(long itemId) {
-        if (!items.containsKey(itemId)) {
-            throw new NotFoundException(String.format("Item с id %s не найдено", itemId));
-        }
-    }
-
-    private void generateId() {
-        id++;
+        } else throw new NotFoundException(String.format("Ошибка обновления: вещь с id=%d не найдена.", itemId));
     }
 }
-

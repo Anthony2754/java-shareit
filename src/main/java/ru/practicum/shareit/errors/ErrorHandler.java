@@ -21,7 +21,7 @@ public class ErrorHandler {
         String exceptionName = e.getClass().getName();
         String exceptionMessage = e.getMessage();
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
-        log.debug(e.getMessage());
+        log.warn(exceptionName, e.getMessage());
 
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, exceptionMessage),
@@ -34,7 +34,7 @@ public class ErrorHandler {
         String exceptionName = e.getClass().getName();
         String exceptionMessage = e.getMessage();
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
-        log.debug(e.getMessage());
+        log.warn(exceptionName, e.getMessage());
 
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, exceptionMessage),
@@ -49,7 +49,7 @@ public class ErrorHandler {
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
         int start = exceptionMessage.lastIndexOf(":") + 2;
         exceptionMessage = e.getMessage().substring(start);
-        log.debug(e.getMessage());
+        log.warn(exceptionName, e.getMessage());
 
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, exceptionMessage),
@@ -62,7 +62,7 @@ public class ErrorHandler {
         String exceptionName = e.getClass().getName();
         String exceptionMessage = e.getMessage();
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
-        log.debug(e.getMessage());
+        log.warn(exceptionName, e.getMessage());
 
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, exceptionMessage),
@@ -74,8 +74,7 @@ public class ErrorHandler {
     ResponseEntity<ErrorResponse> handleForbiddenExceptions(final RuntimeException e) {
         String exceptionName = e.getClass().getName();
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
-        log.debug(e.getMessage());
-
+        log.warn(exceptionName, e.getMessage());
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, e.getMessage()),
                 HttpStatus.FORBIDDEN
@@ -86,7 +85,7 @@ public class ErrorHandler {
     ResponseEntity<ErrorResponse> handleNotFoundExceptions(final NotFoundException e) {
         String exceptionName = e.getClass().getName();
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
-        log.debug(e.getMessage());
+        log.warn(exceptionName, e.getMessage());
 
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, e.getMessage()),
@@ -98,7 +97,7 @@ public class ErrorHandler {
     ResponseEntity<ErrorResponse> handleConflictExceptions(final DuplicateException e) {
         String exceptionName = e.getClass().getName();
         exceptionName = exceptionName.substring(exceptionName.lastIndexOf(".") + 1);
-        log.debug(e.getMessage());
+        log.warn(exceptionName, e.getMessage());
 
         return new ResponseEntity<>(
                 new ErrorResponse(exceptionName, e.getMessage()),

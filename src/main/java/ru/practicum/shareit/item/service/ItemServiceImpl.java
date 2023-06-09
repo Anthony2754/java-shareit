@@ -98,6 +98,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto updateItemDto(ItemDto itemDto, long itemId, long ownerId) {
         Map<ItemUpdatedFields, Boolean> targetFields = new HashMap<>();
         boolean empty = true;
@@ -139,6 +140,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public CommentDto addCommentDto(CommentDto commentDto, long authorId, long itemId) {
         if (!bookingService.commentMadeAfterBooking(authorId, itemId)) {
             throw new ValidationException(String.format("Ошибка добавления комментария: " +

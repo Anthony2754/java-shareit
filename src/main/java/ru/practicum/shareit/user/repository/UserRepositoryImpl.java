@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserUpdateFields;
+
 import java.util.Map;
 import java.util.Optional;
 

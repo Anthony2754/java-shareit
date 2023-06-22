@@ -16,7 +16,7 @@ import java.util.Collection;
 @Generated
 public interface ItemRepository extends PagingAndSortingRepository<Item, Long>, CustomItemRepository {
 
-    Collection<Item> findAllByOwnerId(Long id);
+    Page<Item> findAllByOwnerId(Long id, Pageable pageable);
 
     @Query(value = "SELECT i FROM Item i " +
             "WHERE (LOWER(i.name) LIKE CONCAT('%', LOWER(?1), '%')" +

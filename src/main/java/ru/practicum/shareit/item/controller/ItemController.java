@@ -48,9 +48,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<Collection<ItemDto>> getItemsOwner(@RequestHeader(name = USER_ID) long ownerId) {
+    public ResponseEntity<Collection<ItemDto>> getItemsOwner(
+            @RequestHeader(name = USER_ID) long ownerId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(required = false) @Positive Integer size) {
 
-        return ResponseEntity.ok(itemService.getOwnerItems(ownerId));
+        return ResponseEntity.ok(itemService.getOwnerItems(ownerId, from, size));
     }
 
     @GetMapping(path = "/search")
@@ -60,7 +63,7 @@ public class ItemController {
             @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(required = false) @Positive Integer size) {
 
-        return ResponseEntity.ok(itemService.findByNameOrDescription(ownerId, text, from, size));
+        return ResponseEntity.ok(itemService.searchAvailableItems(ownerId, text, from, size));
     }
 
     @PatchMapping(path = "/{itemId}")

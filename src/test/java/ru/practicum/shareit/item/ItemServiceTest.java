@@ -158,8 +158,8 @@ public class ItemServiceTest {
         item2.setComments(List.of());
 
         assertEquals(List.of(item1, item2),
-                itemService.getOwnerItems(userDto1.getId()));
+                itemService.getOwnerItems(userDto1.getId(), 0, Integer.MAX_VALUE));
         assertEquals(List.of(),
-                itemService.getOwnerItems(userDto2.getId()));
+                itemService.getOwnerItems(userDto2.getId(), 0, Integer.MAX_VALUE));
     }
 }

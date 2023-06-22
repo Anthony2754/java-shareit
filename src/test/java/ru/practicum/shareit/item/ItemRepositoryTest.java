@@ -63,14 +63,14 @@ public class ItemRepositoryTest {
         User user1 = userRepository.save(makeDefaultUser());
         Item item1 = itemRepository.save(makeDefaultItem(user1));
         assertTrue(itemRepository.existsItemByIdAndAvailableIsTrue(item1.getId()));
-        assertEquals(List.of(item1), itemRepository.findAllByOwnerId(user1.getId()));
+        assertEquals(List.of(item1), itemRepository.findAllByOwnerId(user1.getId(), Pageable.unpaged()).getContent());
 
         User user2 = makeDefaultUser();
         user2.setEmail("newEmail@mail.ru");
         user2 = userRepository.save(user2);
         Item item2 = makeDefaultItem(user2);
         item2 = itemRepository.save(item2);
-        assertEquals(List.of(item2), itemRepository.findAllByOwnerId(user2.getId()));
+        assertEquals(List.of(item2), itemRepository.findAllByOwnerId(user2.getId(), Pageable.unpaged()).getContent());
     }
 
     @Test
@@ -105,9 +105,9 @@ public class ItemRepositoryTest {
         long userId = user.getId();
         Item item1 = itemRepository.save(makeDefaultItem(user));
         Item item2 = itemRepository.save(makeDefaultItem(user));
-        assertEquals(List.of(item1, item2), itemRepository.findAllByOwnerId(userId));
+        assertEquals(List.of(item1, item2), itemRepository.findAllByOwnerId(userId, Pageable.unpaged()).getContent());
 
         itemRepository.deleteAllByOwner(user);
-        assertEquals(List.of(), itemRepository.findAllByOwnerId(userId));
+        assertEquals(List.of(), itemRepository.findAllByOwnerId(userId, Pageable.unpaged()).getContent());
     }
 }

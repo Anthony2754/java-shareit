@@ -88,20 +88,25 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> getOwnerItems(long ownerId) {
+    public Collection<ItemDto> getOwnerItems(long ownerId,  int startingIndex, Integer collectionSize) {
+        if (collectionSize == null) {
+            collectionSize = Integer.MAX_VALUE;
+        }
 
-        return itemRepository.findAllByOwnerId(ownerId).stream()
+        return itemRepository.findAllByOwnerId(
+                        ownerId, Pageable.ofSize(startingIndex + collectionSize)).stream()
+                .sorted(Comparator.comparing(Item::getId))
+                .skip(startingIndex)
                 .map(item -> {
                     Map<ActualItemBooking, BookingDtoShort> itemDtoBookingsMap =
                             bookingService.getLastAndNextBookingByItem(item, ownerId);
                     return itemMapper.mapToItemDto(item, itemDtoBookingsMap.get(LAST), itemDtoBookingsMap.get(NEXT));
                 })
-                .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<ItemDto> findByNameOrDescription(
+    public Collection<ItemDto> searchAvailableItems(
             long userId, String text,  int startingIndex, Integer collectionSize) {
         if (collectionSize == null) {
             collectionSize = Integer.MAX_VALUE;

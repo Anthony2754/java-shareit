@@ -40,11 +40,11 @@ public class ItemRequestControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper mapper;
-    private final String DEFAULT_URI = String.format("http://localhost:%d/requests", port);
+    private final String defaultUri = String.format("http://localhost:%d/requests", port);
 
     private ItemRequestDto addRequest(ItemRequestDto requestDto, long userId) throws Exception {
         MockHttpServletResponse postResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(mapper.writeValueAsString(requestDto))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userId)))
@@ -90,7 +90,7 @@ public class ItemRequestControllerTest {
         ItemRequestDto storedRequestDto;
 
         MockHttpServletResponse postResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(mapper.writeValueAsString(requestDto))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userDto.getId())))
@@ -100,7 +100,7 @@ public class ItemRequestControllerTest {
         requestDto.setItems(Set.of());
 
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI + "/" + requestDto.getId())
+                        get(defaultUri + "/" + requestDto.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userDto.getId())))
                 .andReturn().getResponse();
@@ -114,7 +114,7 @@ public class ItemRequestControllerTest {
     public void shouldBeExceptionForAddRequestFromNotFoundUser() throws Exception {
         ItemRequestDto requestDto = makeDefaultRequest();
         MockHttpServletResponse postResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(mapper.writeValueAsString(requestDto))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(0L)))
@@ -127,7 +127,7 @@ public class ItemRequestControllerTest {
         UserDto userDto = addDefaultUser("email@mail.com");
 
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI + "/" + 0)
+                        get(defaultUri + "/" + 0)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userDto.getId())))
                 .andReturn().getResponse();
@@ -137,7 +137,7 @@ public class ItemRequestControllerTest {
     @Test
     public void shouldBeExceptionForGetRequestFromNotFoundUser() throws Exception {
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI + "/" + 0)
+                        get(defaultUri + "/" + 0)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(0L)))
                 .andReturn().getResponse();
@@ -159,7 +159,7 @@ public class ItemRequestControllerTest {
         requestDto.setCreated(requestDto.getCreated().truncatedTo(ChronoUnit.MICROS));
 
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI)
+                        get(defaultUri)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userDto.getId())))
                 .andReturn().getResponse();
@@ -172,7 +172,7 @@ public class ItemRequestControllerTest {
     @Test
     public void shouldBeExceptionForGetOwnerItemRequestFromNotFoundUser() throws Exception {
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI)
+                        get(defaultUri)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(0L)))
                 .andReturn().getResponse();
@@ -182,7 +182,7 @@ public class ItemRequestControllerTest {
     @Test
     public void shouldBeExceptionForGetOtherUsersRequestsFromNotFoundUser() throws Exception {
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI + "/all")
+                        get(defaultUri + "/all")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(0L)))
                 .andReturn().getResponse();
@@ -203,7 +203,7 @@ public class ItemRequestControllerTest {
         requestDto.setCreated(requestDto.getCreated().truncatedTo(ChronoUnit.MICROS));
 
         MockHttpServletResponse getResponse = mvc.perform(
-                        get(DEFAULT_URI + "/all")
+                        get(defaultUri + "/all")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userDto2.getId())))
                 .andReturn().getResponse();

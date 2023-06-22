@@ -35,7 +35,7 @@ public class UserControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper mapper;
-    private final String DEFAULT_URI = String.format("http://localhost:%d/users", port);
+    private final String defaultUri = String.format("http://localhost:%d/users", port);
 
     private UserDto makeDefaultUserDto() {
         return UserDto.builder()
@@ -50,7 +50,7 @@ public class UserControllerTest {
         UserDto userDto = makeDefaultUserDto();
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(mapper.writeValueAsString(userDto))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -63,14 +63,14 @@ public class UserControllerTest {
     public void shouldBeExceptionForAddUserWithDuplicateEmail() throws Exception {
         UserDto userDto = makeDefaultUserDto();
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(userDto))
                 .contentType(MediaType.APPLICATION_JSON));
 
         userDto.setId(2L);
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(mapper.writeValueAsString(userDto))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -82,12 +82,12 @@ public class UserControllerTest {
     public void getUserTest() throws Exception {
         UserDto userDto = makeDefaultUserDto();
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(userDto))
                 .contentType(MediaType.APPLICATION_JSON));
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        get(DEFAULT_URI + "/1"))
+                        get(defaultUri + "/1"))
                 .andReturn().getResponse();
 
         assertEquals(HttpStatus.OK.value(), servletResponse.getStatus());
@@ -98,7 +98,7 @@ public class UserControllerTest {
     public void shouldBeExceptionForNotFoundUser() throws Exception {
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        get(DEFAULT_URI + "/1"))
+                        get(defaultUri + "/1"))
                 .andReturn().getResponse();
 
         assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
@@ -108,7 +108,7 @@ public class UserControllerTest {
     public void getUsersTest() throws Exception {
         UserDto userDto1 = makeDefaultUserDto();
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(userDto1))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -117,12 +117,12 @@ public class UserControllerTest {
         userDto2.setName("User2");
         userDto2.setEmail("newEmail@mail.ru");
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(userDto2))
                 .contentType(MediaType.APPLICATION_JSON));
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        get(DEFAULT_URI)
+                        get(defaultUri)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
 
@@ -136,7 +136,7 @@ public class UserControllerTest {
         userDto.setName("User");
         userDto.setEmail("user@mail.ru");
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(userDto))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -144,7 +144,7 @@ public class UserControllerTest {
         userDto.setEmail("newEmail@mail.ru");
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(DEFAULT_URI + "/1")
+                        patch(defaultUri + "/1")
                                 .content(mapper.writeValueAsString(userDto))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -159,7 +159,7 @@ public class UserControllerTest {
     public void shouldBeExceptionForEmptyRequest() throws Exception {
         UserDto userDto = makeDefaultUserDto();
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(userDto))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -167,7 +167,7 @@ public class UserControllerTest {
         userDto.setEmail(null);
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(DEFAULT_URI + "/1")
+                        patch(defaultUri + "/1")
                                 .content(mapper.writeValueAsString(userDto))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -178,16 +178,16 @@ public class UserControllerTest {
     @Test
     public void deleteUserTest() throws Exception {
 
-        mvc.perform(post(DEFAULT_URI)
+        mvc.perform(post(defaultUri)
                 .content(mapper.writeValueAsString(makeDefaultUserDto()))
                 .contentType(MediaType.APPLICATION_JSON));
 
         MockHttpServletResponse deleteResponse = mvc.perform(
-                        delete(DEFAULT_URI + "/1"))
+                        delete(defaultUri + "/1"))
                 .andReturn().getResponse();
 
         MockHttpServletResponse listResponse = mvc.perform(
-                        get(DEFAULT_URI))
+                        get(defaultUri))
                 .andReturn().getResponse();
 
         assertEquals(HttpStatus.OK.value(), deleteResponse.getStatus());
@@ -200,7 +200,7 @@ public class UserControllerTest {
     public void shouldBeExceptionForDeleteNonExistentUser() throws Exception {
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        delete(DEFAULT_URI + "/1"))
+                        delete(defaultUri + "/1"))
                 .andReturn().getResponse();
 
         assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());

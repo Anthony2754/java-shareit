@@ -41,7 +41,7 @@ public class ItemControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper mapper;
-    private final String DEFAULT_URI = String.format("http://localhost:%d/items", port);
+    private final String defaultUri = String.format("http://localhost:%d/items", port);
 
 
     private HttpHeaders getDefaultHeader(Long ownerId) {
@@ -80,7 +80,7 @@ public class ItemControllerTest {
 
     private ItemDto addItem(ItemDto itemDto, long ownerId) throws Exception {
         MockHttpServletResponse servletResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .headers(getDefaultHeader(ownerId))
                                 .content(mapper.writeValueAsString(itemDto))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -123,7 +123,7 @@ public class ItemControllerTest {
         headers.set("X-Sharer-User-Id", "1");
 
         MockHttpServletResponse response = mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                                 .headers(headers)
                                 .content(mapper.writeValueAsString(itemDto))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -141,7 +141,7 @@ public class ItemControllerTest {
         headers.set("X-Sharer-User-Id", "1");
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .headers(headers)
                                 .content(mapper.writeValueAsString(itemDto))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -166,7 +166,7 @@ public class ItemControllerTest {
         CommentDto comment = CommentDto.builder().text("comment text").build();
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        post(DEFAULT_URI + "/" + itemId + "/comment")
+                        post(defaultUri + "/" + itemId + "/comment")
                                 .content(mapper.writeValueAsString(comment))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(bookerId)))
@@ -183,13 +183,13 @@ public class ItemControllerTest {
         headers.set("X-Sharer-User-Id", "1");
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(itemDto))
                         .contentType(MediaType.APPLICATION_JSON));
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        get(DEFAULT_URI + "/1")
+                        get(defaultUri + "/1")
                                 .headers(headers)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -205,7 +205,7 @@ public class ItemControllerTest {
         headers.set("X-Sharer-User-Id", "1");
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        get(DEFAULT_URI + "/1")
+                        get(defaultUri + "/1")
                                 .headers(headers)
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();
@@ -225,7 +225,7 @@ public class ItemControllerTest {
         item1.setAvailable(true);
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(item1))
                         .contentType(MediaType.APPLICATION_JSON));
@@ -237,7 +237,7 @@ public class ItemControllerTest {
         item2.setAvailable(true);
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(item2))
                         .contentType(MediaType.APPLICATION_JSON));
@@ -249,13 +249,13 @@ public class ItemControllerTest {
         item3.setAvailable(false);
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(item3))
                         .contentType(MediaType.APPLICATION_JSON));
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        get(DEFAULT_URI + "/search")
+                        get(defaultUri + "/search")
                                 .headers(headers)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .param("text", "item"))
@@ -278,7 +278,7 @@ public class ItemControllerTest {
         item1.setAvailable(false);
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(item1))
                         .contentType(MediaType.APPLICATION_JSON));
@@ -288,7 +288,7 @@ public class ItemControllerTest {
         item1.setAvailable(true);
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(DEFAULT_URI + "/1")
+                        patch(defaultUri + "/1")
                                 .headers(headers)
                                 .content(mapper.writeValueAsString(item1))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -310,7 +310,7 @@ public class ItemControllerTest {
         ItemDto item1 = makeDefaultItemDto();
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(item1))
                         .contentType(MediaType.APPLICATION_JSON));
@@ -320,7 +320,7 @@ public class ItemControllerTest {
         item1.setAvailable(null);
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(DEFAULT_URI + "/1")
+                        patch(defaultUri + "/1")
                                 .headers(headers)
                                 .content(mapper.writeValueAsString(item1))
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -347,7 +347,7 @@ public class ItemControllerTest {
         item1.setAvailable(false);
 
         mvc.perform(
-                post(DEFAULT_URI)
+                post(defaultUri)
                         .headers(headers)
                         .content(mapper.writeValueAsString(item1))
                         .contentType(MediaType.APPLICATION_JSON));
@@ -359,7 +359,7 @@ public class ItemControllerTest {
         headers.set("X-Sharer-User-Id", "2");
 
         MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(DEFAULT_URI + "/1")
+                        patch(defaultUri + "/1")
                                 .headers(headers)
                                 .content(mapper.writeValueAsString(item1))
                                 .contentType(MediaType.APPLICATION_JSON))

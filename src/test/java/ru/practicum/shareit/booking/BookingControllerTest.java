@@ -45,7 +45,7 @@ public class BookingControllerTest {
     private ObjectMapper objectMapper;
 
 
-    private final String DEFAULT_URI = String.format("http://localhost:%d/bookings", port);
+    private final String defaultUri = String.format("http://localhost:%d/bookings", port);
 
     private HttpHeaders getDefaultHeader(Long userId) {
 
@@ -57,7 +57,7 @@ public class BookingControllerTest {
     private Collection<BookingDto> getBookingsOwnerAndStatus(Long ownerId, String state) throws Exception {
 
         MockHttpServletResponse servletResponse = mockMvc.perform(
-                        get(DEFAULT_URI + "/owner")
+                        get(defaultUri + "/owner")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(ownerId))
                                 .param("state", state)
@@ -70,7 +70,7 @@ public class BookingControllerTest {
 
     private Collection<BookingDto> getBookingsByBookerAndStatus(Long booker, String state) throws Exception {
 
-        MockHttpServletResponse servletResponse = mockMvc.perform(get(DEFAULT_URI)
+        MockHttpServletResponse servletResponse = mockMvc.perform(get(defaultUri)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(booker))
                                 .param("state", state)
@@ -83,7 +83,7 @@ public class BookingControllerTest {
 
     private BookingDto setApproved(long requesterId, long bookingId, Boolean approved) throws Exception {
 
-        MockHttpServletResponse servletResponse = mockMvc.perform(patch(DEFAULT_URI + "/" + bookingId)
+        MockHttpServletResponse servletResponse = mockMvc.perform(patch(defaultUri + "/" + bookingId)
                                 .headers(getDefaultHeader(requesterId))
                                 .param("approved", approved.toString()))
                                 .andReturn().getResponse();
@@ -93,7 +93,7 @@ public class BookingControllerTest {
 
     private BookingDto addBooking(BookingDtoRequest bookingDtoRequest, long bookerId) throws Exception {
 
-        MockHttpServletResponse servletResponse = mockMvc.perform(post(DEFAULT_URI)
+        MockHttpServletResponse servletResponse = mockMvc.perform(post(defaultUri)
                                 .content(objectMapper.writeValueAsString(bookingDtoRequest))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(bookerId)))
@@ -149,7 +149,7 @@ public class BookingControllerTest {
         BookingDtoRequest bookingDtoRequest = makeDefaultBookingDtoRequest(itemDto.getId());
 
         MockHttpServletResponse servletResponse = mockMvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(objectMapper.writeValueAsString(bookingDtoRequest))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(booker.getId())))
@@ -158,7 +158,7 @@ public class BookingControllerTest {
         BookingDto bookingDto = objectMapper.readValue(servletResponse.getContentAsString(), BookingDto.class);
 
         servletResponse = mockMvc.perform(
-                        get(DEFAULT_URI + "/" + bookingDto.getId())
+                        get(defaultUri + "/" + bookingDto.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(owner.getId())))
                 .andReturn().getResponse();
@@ -178,7 +178,7 @@ public class BookingControllerTest {
         request.setEnd(request.getStart().minusDays(1));
 
         MockHttpServletResponse servletResponse = mockMvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(booker.getId())))
@@ -218,7 +218,7 @@ public class BookingControllerTest {
         booking3.setStart(time2);
         booking3.setEnd(time5);
         MockHttpServletResponse servletResponse = mockMvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(objectMapper.writeValueAsString(booking3))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(booker3.getId())))
@@ -246,7 +246,7 @@ public class BookingControllerTest {
 
         BookingDtoRequest booking = makeDefaultBookingDtoRequest(itemDto.getId());
         servletResponse = mockMvc.perform(
-                        post(DEFAULT_URI)
+                        post(defaultUri)
                                 .content(objectMapper.writeValueAsString(booking))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(booker.getId())))
@@ -260,7 +260,7 @@ public class BookingControllerTest {
         UserDto userDto = addDefaultUser("email@mail.ru");
 
         MockHttpServletResponse servletResponse = mockMvc.perform(
-                        get(DEFAULT_URI + "/0")
+                        get(defaultUri + "/0")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(userDto.getId())))
                 .andReturn().getResponse();
@@ -325,7 +325,7 @@ public class BookingControllerTest {
         setApproved(user.getId(), bookingDto.getId(), true);
 
         MockHttpServletResponse servletResponse = mockMvc.perform(
-                        get(DEFAULT_URI + "/" + bookingDto.getId())
+                        get(defaultUri + "/" + bookingDto.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .headers(getDefaultHeader(booker.getId())))
                 .andReturn().getResponse();

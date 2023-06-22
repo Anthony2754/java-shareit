@@ -228,7 +228,7 @@ public class UserControllerTest {
         userDto1.setName(null);
 
         MockHttpServletResponse response = mvc.perform(
-                        patch(defaultUri+ "/2")
+                        patch(defaultUri + "/2")
                                 .content(mapper.writeValueAsString(userDto1))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn().getResponse();

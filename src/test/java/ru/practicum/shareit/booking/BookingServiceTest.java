@@ -159,8 +159,16 @@ public class BookingServiceTest {
         userDto = userService.addUserDto(userDto);
 
         UserDto finalUserDto = userDto;
+        assertThrows(NotFoundException.class, () -> bookingService.getBookingDto(finalUserDto.getId(), 1));
+    }
+
+    @Test
+    public void shouldBeExceptionForBookingOwnedItem() {
+        UserDto user = userService.addUserDto(makeDefaultUser());
+        ItemDto item = itemService.addItemDto(makeDefaultItem(), user.getId());
+
         assertThrows(NotFoundException.class,
-                () -> bookingService.getBookingDto(finalUserDto.getId(), 1));
+                () -> bookingService.addBooking(makeDefaultBookingDtoRequest(item.getId()), user.getId()));
     }
 
     @Test
@@ -328,6 +336,45 @@ public class BookingServiceTest {
 
         bookingsMap = bookingService.getLastAndNextBookingByItem(item, user.getId());
         assertEquals(bookingsMap.get(ActualItemBooking.LAST).getId(), bookingDto1.getId());
+        assertEquals(bookingsMap.get(ActualItemBooking.NEXT).getId(), bookingDto2.getId());
+    }
+
+    @Test
+    public void getLastAndNextBookingByItemWithoutCurrentTest() {
+        Map<ActualItemBooking, BookingDtoShort> bookingsMap;
+
+        LocalDateTime timePoint1 = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime timePoint2 = timePoint1.plusDays(1);
+        LocalDateTime timePoint3 = timePoint2.plusDays(1);
+        LocalDateTime timePoint4 = timePoint3.plusDays(1);
+        LocalDateTime timePoint5 = timePoint4.plusDays(1);
+        LocalDateTime timePoint6 = timePoint5.plusDays(1);
+
+        UserDto user = userService.addUserDto(makeDefaultUser());
+        ItemDto itemDto = itemService.addItemDto(makeDefaultItem(), user.getId());
+        Item item = itemService.getItem(itemDto.getId());
+        long itemId = item.getId();
+
+        UserDto booker1 = makeDefaultUser();
+        booker1.setEmail("newEmail@mail.ru");
+        booker1 = userService.addUserDto(booker1);
+
+        BookingDtoRequest dtoRequest2 = makeDefaultBookingDtoRequest(itemId);
+        dtoRequest2.setStart(timePoint3);
+        dtoRequest2.setEnd(timePoint4);
+        BookingDto bookingDto2 = bookingService.addBooking(dtoRequest2, booker1.getId());
+
+        bookingsMap = bookingService.getLastAndNextBookingByItem(item, user.getId());
+        assertNull(bookingsMap.get(ActualItemBooking.LAST));
+        assertEquals(bookingsMap.get(ActualItemBooking.NEXT).getId(), bookingDto2.getId());
+
+        BookingDtoRequest dtoRequest3 = makeDefaultBookingDtoRequest(itemId);
+        dtoRequest3.setStart(timePoint5);
+        dtoRequest3.setEnd(timePoint6);
+        bookingService.addBooking(dtoRequest3, booker1.getId());
+
+        bookingsMap = bookingService.getLastAndNextBookingByItem(item, user.getId());
+        assertNull(bookingsMap.get(ActualItemBooking.LAST));
         assertEquals(bookingsMap.get(ActualItemBooking.NEXT).getId(), bookingDto2.getId());
     }
 

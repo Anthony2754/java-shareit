@@ -205,4 +205,34 @@ public class UserControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
     }
+
+    @Test
+    public void shouldBeExceptionForPatchWithDuplicateEmail() throws Exception {
+        UserDto userDto1 = makeDefaultUserDto();
+        userDto1.setName("User");
+        userDto1.setEmail("useremail@mail.ru");
+
+        mvc.perform(post(defaultUri)
+                .content(mapper.writeValueAsString(userDto1))
+                .contentType(MediaType.APPLICATION_JSON));
+
+        UserDto userDto2 = makeDefaultUserDto();
+        userDto2.setId(2L);
+        userDto2.setName("User2");
+        userDto2.setEmail("newEmail@mail.com");
+
+        mvc.perform(post(defaultUri)
+                .content(mapper.writeValueAsString(userDto2))
+                .contentType(MediaType.APPLICATION_JSON));
+
+        userDto1.setName(null);
+
+        MockHttpServletResponse response = mvc.perform(
+                        patch(defaultUri+ "/2")
+                                .content(mapper.writeValueAsString(userDto1))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.CONFLICT.value(), response.getStatus());
+    }
 }

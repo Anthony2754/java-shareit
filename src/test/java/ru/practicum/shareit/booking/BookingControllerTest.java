@@ -333,4 +333,20 @@ public class BookingControllerTest {
         assertEquals(BookingStatus.APPROVED,
                 objectMapper.readValue(servletResponse.getContentAsString(), BookingDto.class).getStatus());
     }
+
+    @Test
+    public void shouldBeExceptionForBookingOwnedItem() throws Exception {
+        UserDto user = addDefaultUser("email@mail.ru");
+        ItemDto item = addDefaultItem(user.getId());
+
+        BookingDtoRequest booking = makeDefaultBookingDtoRequest(item.getId());
+        MockHttpServletResponse servletResponse = mockMvc.perform(
+                        post(defaultUri)
+                                .content(objectMapper.writeValueAsString(booking))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .headers(getDefaultHeader(user.getId())))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
+    }
 }

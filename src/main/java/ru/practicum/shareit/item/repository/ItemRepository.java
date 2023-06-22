@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.Collection;
-
 @Repository
 @Generated
 public interface ItemRepository extends PagingAndSortingRepository<Item, Long>, CustomItemRepository {

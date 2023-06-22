@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDto addUseDto(UserDto userDto) {
+    public UserDto addUserDto(UserDto userDto) {
         User user = userMapper.mapToUserModel(userDto);
         user.setId(null);
 

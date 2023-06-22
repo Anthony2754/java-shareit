@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -107,8 +108,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public Collection<BookingDto> getBookingsByBookerIdOrOwnerIdAndStatusSortedByDateDesc(
-            Long bookerId, Long ownerId, String state) {
+    public Collection<BookingDto> getBookingsUserAndState(
+            Long bookerId, Long ownerId, String state, int startIndex, Integer collectionSize) {
         if (ownerId != null && userService.userNotFound(ownerId)) {
             throw new NotFoundException(
                     String.format("Ошибка при получении бронирований по владельцу вещи: " +
@@ -120,35 +121,42 @@ public class BookingServiceImpl implements BookingService {
                     String.format("Ошибка при получении бронирований по автору: " +
                             "пользователя с id=%d не существует.", bookerId));
         }
+        if (collectionSize == null) {
+            collectionSize = Integer.MAX_VALUE;
+        }
+        Pageable pageable = Pageable.ofSize(startIndex + collectionSize);
         Collection<Booking> collection;
         BookingStatus status;
 
         status = parseStatus(state);
 
         if (status == ALL) {
-            collection = bookingRepository.getAllByBookerIdOrItemOwnerIdOrderByStartTimeDesc(bookerId, ownerId);
+            collection = bookingRepository.getAllByBookerIdOrItemOwnerIdOrderByStartTimeDesc(
+                    bookerId, ownerId, pageable).getContent();
+            log.debug("Получен список: {}", collection);
 
         } else if (status == WAITING) {
             collection = bookingRepository.getWaitingOrRejectedBookings(
-                    bookerId, ownerId, null);
+                    bookerId, ownerId, null, pageable).getContent();
 
         } else if (status == REJECTED) {
             collection = bookingRepository.getWaitingOrRejectedBookings(
-                    bookerId, ownerId, false);
+                    bookerId, ownerId, false, pageable).getContent();
 
         } else if (status == PAST) {
-            collection = bookingRepository.getPastBookingsByBookerIdOrOwnerId(bookerId, ownerId);
+            collection = bookingRepository.getPastBookingsByBookerIdOrOwnerId(
+                    bookerId, ownerId, pageable).getContent();
 
         } else if (status == FUTURE) {
-            collection = bookingRepository.getFutureBookings(bookerId, ownerId);
+            collection = bookingRepository.getFutureBookings(bookerId, ownerId, pageable).getContent();
 
         } else {
-            collection = bookingRepository.getCurrentBookings(bookerId, ownerId);
+            collection = bookingRepository.getCurrentBookings(bookerId, ownerId, pageable).getContent();
         }
         return collection.stream()
+                .skip(startIndex)
                 .map(booking -> mapper.mapToDto(booking, this.statusChange(booking)))
                 .collect(Collectors.toCollection(ArrayList::new));
-
     }
 
     @Transactional
@@ -282,7 +290,6 @@ public class BookingServiceImpl implements BookingService {
 
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Unknown state: UNSUPPORTED_STATUS");
-                // здесь пришлось написать именно такую ошибку на английском чтобы проходили тесты постмана
             }
         } else {
             status = ALL;

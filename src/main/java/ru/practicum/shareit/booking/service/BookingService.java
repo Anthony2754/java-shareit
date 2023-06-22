@@ -14,8 +14,8 @@ public interface BookingService {
 
     BookingDto getBookingDto(long requesterId, long bookingId);
 
-    Collection<BookingDto> getBookingsByBookerIdOrOwnerIdAndStatusSortedByDateDesc(
-            Long bookerId, Long ownerId, String state);
+    Collection<BookingDto> getBookingsUserAndState(
+            Long bookerId, Long ownerId, String state, int startIndex, Integer collectionSize);
 
     Map<ActualItemBooking, BookingDtoShort> getLastAndNextBookingByItem(Item item, long requesterId);
 

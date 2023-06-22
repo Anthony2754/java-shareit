@@ -23,7 +23,7 @@ public class UserController {
     @PostMapping
     @Validated(value = UserValidation.FullValidation.class)
     ResponseEntity<UserDto> addUser(@RequestBody @Valid UserDto userDto) {
-        return new ResponseEntity<>(userService.addUseDto(userDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.addUserDto(userDto), HttpStatus.CREATED);
     }
 
     @GetMapping(path = "/{id}")

@@ -27,6 +27,7 @@ public class ItemDto {
     private String description;
     @NotNull(message = "Доступность для бронирования должна быть заполнена")
     private Boolean available;
+    private Long requestId;
     private BookingDtoShort lastBooking;
     private BookingDtoShort nextBooking;
     private List<CommentDto> comments;

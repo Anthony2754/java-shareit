@@ -10,6 +10,7 @@ public interface UserMapper {
     @Mapping(target = "items", ignore = true)
     @Mapping(target = "comments", ignore = true)
     @Mapping(target = "bookings", ignore = true)
+    @Mapping(target = "requests", ignore = true)
     User mapToUserModel(UserDto itemDto);
 
     UserDto mapToUserDto(User user);

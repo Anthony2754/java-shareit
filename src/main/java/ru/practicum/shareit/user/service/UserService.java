@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface UserService {
 
-    UserDto addUseDto(UserDto userDto);
+    UserDto addUserDto(UserDto userDto);
 
     UserDto getUserByIdDto(long userId);
 

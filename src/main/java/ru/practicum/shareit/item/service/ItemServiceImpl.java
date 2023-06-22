@@ -16,9 +16,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,7 @@ import static ru.practicum.shareit.item.service.ActualItemBooking.NEXT;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -36,10 +40,21 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
+    private final ItemRequestService itemRequestService;
 
     @Override
     public ItemDto addItemDto(ItemDto itemDto, long ownerId) {
-        Item item = itemMapper.mapToItemModel(itemDto, userService.getUserById(ownerId));
+        Item item;
+        ItemRequest request;
+        Long requestId = itemDto.getRequestId();
+
+        if (requestId != null) {
+            request = itemRequestService.getRequest(requestId);
+        } else {
+            request = null;
+        }
+
+        item = itemMapper.mapToItemModel(itemDto, userService.getUserById(ownerId), request);
         item.setId(null);
         item = itemRepository.save(item);
 
@@ -130,7 +145,7 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Ошибка обновления вещи: поля запроса равны null");
         }
 
-        item = itemMapper.mapToItemModel(itemDto, userService.getUserById(ownerId));
+        item = itemMapper.mapToItemModel(itemDto, userService.getUserById(ownerId), null);
         item.setId(itemId);
         item = itemRepository.updateItem(item, targetFields);
         itemDtoBookingsMap = bookingService.getLastAndNextBookingByItem(item, ownerId);
@@ -149,7 +164,7 @@ public class ItemServiceImpl implements ItemService {
 
         Comment comment = commentMapper.mapToModel(
                 commentDto, userService.getUserById(authorId), this.getItem(itemId));
-        comment.setCreated(LocalDateTime.now());
+        comment.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
         comment = commentRepository.save(comment);
 
         log.debug("Добавлен комментарий: {}", comment);

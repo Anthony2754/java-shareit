@@ -11,6 +11,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 
 @RestController
@@ -54,9 +56,11 @@ public class ItemController {
     @GetMapping(path = "/search")
     public ResponseEntity<Collection<ItemDto>> findByNameOrDescription(
             @RequestHeader(name = USER_ID) long ownerId,
-            @RequestParam String text) {
+            @RequestParam String text,
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(required = false) @Positive Integer size) {
 
-        return ResponseEntity.ok(itemService.findByNameOrDescription(ownerId, text));
+        return ResponseEntity.ok(itemService.findByNameOrDescription(ownerId, text, from, size));
     }
 
     @PatchMapping(path = "/{itemId}")

@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDtoShort;
@@ -100,9 +101,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> findByNameOrDescription(long userId, String text) {
+    public Collection<ItemDto> findByNameOrDescription(
+            long userId, String text,  int startingIndex, Integer collectionSize) {
+        if (collectionSize == null) {
+            collectionSize = Integer.MAX_VALUE;
+        }
+
         if (!text.isEmpty()) {
-            return itemRepository.searchAvailableItemsByNameAndDescription(text).stream()
+            return itemRepository.searchAvailableItemsByNameAndDescription(
+                    text, Pageable.ofSize(startingIndex + collectionSize)).stream()
                     .map(item -> {
                         Map<ActualItemBooking, BookingDtoShort> itemDtoBookingsMap = bookingService.getLastAndNextBookingByItem(item, userId);
                         return itemMapper.mapToItemDto(item, itemDtoBookingsMap.get(LAST), itemDtoBookingsMap.get(NEXT));

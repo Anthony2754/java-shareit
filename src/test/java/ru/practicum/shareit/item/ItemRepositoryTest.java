@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.item.model.Item;
@@ -95,7 +96,7 @@ public class ItemRepositoryTest {
         itemRepository.save(item3);
 
         assertEquals(List.of(item1, item2), itemRepository.searchAvailableItemsByNameAndDescription(
-                "item"));
+                "item", Pageable.unpaged()).getContent());
     }
 
     @Test

@@ -15,7 +15,7 @@ public interface ItemService {
 
     Collection<ItemDto> getOwnerItems(long ownerId);
 
-    Collection<ItemDto> findByNameOrDescription(long ownerId, String text);
+    Collection<ItemDto> findByNameOrDescription(long ownerId, String text,  int startingIndex, Integer collectionSize);
 
     ItemDto updateItemDto(ItemDto itemDto, long itemId, long ownerId);
 

@@ -1,5 +1,8 @@
 package ru.practicum.shareit.item.repository;
 
+import lombok.Generated;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
@@ -10,6 +13,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.Collection;
 
 @Repository
+@Generated
 public interface ItemRepository extends PagingAndSortingRepository<Item, Long>, CustomItemRepository {
 
     Collection<Item> findAllByOwnerId(Long id);
@@ -19,7 +23,7 @@ public interface ItemRepository extends PagingAndSortingRepository<Item, Long>, 
             "OR LOWER(i.description) LIKE CONCAT('%', LOWER(?1), '%'))" +
             " AND i.available = TRUE"
     )
-    Collection<Item> searchAvailableItemsByNameAndDescription(String query);
+    Page<Item> searchAvailableItemsByNameAndDescription(String query, Pageable pageable);
 
     @Transactional
     void deleteAllByOwner(User owner);

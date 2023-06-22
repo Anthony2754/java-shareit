@@ -11,6 +11,7 @@ import javax.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 
+
 @Getter
 @Setter
 @ToString
@@ -19,6 +20,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "items")
+@Generated
 public class Item {
 
     @Id

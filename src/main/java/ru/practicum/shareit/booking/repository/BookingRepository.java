@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.repository;
 
+import lombok.Generated;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +11,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import java.util.Collection;
 
 @Repository
+@Generated
 public interface BookingRepository extends PagingAndSortingRepository<Booking, Long> {
 
     Page<Booking> getAllByBookerIdOrItemOwnerIdOrderByStartTimeDesc(Long bookerId, Long ownerId, Pageable pageable);

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.repository;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -27,13 +27,6 @@ public class UserRepositoryTest {
 
     private UserRepository repository;
 
-    private User makeDefaultUser() {
-        return User.builder()
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
-
     @Test
     public void updateUserTest() {
         Map<UserUpdateFields, Boolean> targetFields = new HashMap<>();
@@ -56,5 +49,12 @@ public class UserRepositoryTest {
         Optional<User> result = repository.findById(1L);
         assertTrue(result.isPresent());
         assertEquals(finishedUser, result.get());
+    }
+
+    private User makeDefaultUser() {
+        return User.builder()
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
     }
 }

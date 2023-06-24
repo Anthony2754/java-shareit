@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.service;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -29,19 +29,6 @@ public class ItemRequestServiceTest {
 
     private UserService userService;
     private ItemRequestService requestService;
-
-    private UserDto makeDefaultUser() {
-        return UserDto.builder()
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
-
-    private ItemRequestDto makeDefaultRequest() {
-        return ItemRequestDto.builder()
-                .description("Description request")
-                .build();
-    }
 
     @Test
     public void addRequestTest() {
@@ -123,5 +110,18 @@ public class ItemRequestServiceTest {
     public void shouldBeExceptionForGetOtherUsersRequestFromNotFoundUser() {
         assertThrows(NotFoundException.class,
                 () -> requestService.getOtherUsersRequests(0, 0, Integer.MAX_VALUE));
+    }
+
+    private UserDto makeDefaultUser() {
+        return UserDto.builder()
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
+    }
+
+    private ItemRequestDto makeDefaultRequest() {
+        return ItemRequestDto.builder()
+                .description("Description request")
+                .build();
     }
 }

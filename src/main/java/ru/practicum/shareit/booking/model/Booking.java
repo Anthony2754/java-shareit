@@ -33,7 +33,6 @@ public class Booking {
     private LocalDateTime startTime;
     @Column(name = "end_time")
     private LocalDateTime endTime;
-    @Column(name = "approved")
     private Boolean approved;
 
     @Override

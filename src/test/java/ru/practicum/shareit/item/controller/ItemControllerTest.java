@@ -1,7 +1,9 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -41,8 +43,248 @@ public class ItemControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper mapper;
+    private MockHttpServletResponse servletResponse;
+    private ItemDto itemDto;
+    private HttpHeaders headers;
     private final String defaultUri = String.format("http://localhost:%d/items", port);
 
+    @BeforeEach
+    public void beforeEach() {
+        itemDto = makeDefaultItemDto();
+        headers = new HttpHeaders();
+        headers.set("X-Sharer-User-Id", "1");
+    }
+
+    @Test
+    public void addItemTest() throws Exception {
+        addDefaultUser("email@mail.ru");
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        post(defaultUri)
+                                .headers(headers)
+                                .content(mapper.writeValueAsString(itemDto))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+        assertEquals(HttpStatus.CREATED.value(), servletResponse.getStatus());
+        itemDto.setComments(null);
+        assertEquals(itemDto, mapper.readValue(servletResponse.getContentAsString(), ItemDto.class));
+    }
+
+    @Test
+    public void shouldBeExceptionForAddItemWithoutOwner() throws Exception {
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        post(defaultUri)
+                                .headers(headers)
+                                .content(mapper.writeValueAsString(itemDto))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
+    }
+
+    @Test
+    public void shouldBeExceptionForAddCommentWithoutCurrentOrPastBooking() throws Exception {
+        UserDto user = addDefaultUser("email@mail.ru");
+        UserDto booker = addDefaultUser("newEmail@mail.ru");
+        long userId = user.getId();
+        long bookerId = booker.getId();
+
+        ItemDto item = addItem(makeDefaultItemDto(), userId);
+        long itemId = item.getId();
+
+        BookingDto bookingDto = addBooking(makeDefaultBookingDtoRequest(itemId), bookerId);
+        setApproved(userId, bookingDto.getId());
+
+        CommentDto comment = CommentDto.builder().text("comment text").build();
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        post(defaultUri + "/" + itemId + "/comment")
+                                .content(mapper.writeValueAsString(comment))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .headers(getDefaultHeader(bookerId)))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), servletResponse.getStatus());
+    }
+
+    @Test
+    public void getItemTest() throws Exception {
+        addDefaultUser("email@mail.ru");
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(itemDto))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        get(defaultUri + "/1")
+                                .headers(headers)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.OK.value(), servletResponse.getStatus());
+        assertEquals(itemDto, mapper.readValue(servletResponse.getContentAsString(), ItemDto.class));
+    }
+
+    @Test
+    public void shouldBeExceptionNotFoundItem() throws Exception {
+        addDefaultUser("email@mail.ru");
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        get(defaultUri + "/1")
+                                .headers(headers)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
+    }
+
+    @Test
+    public void searchingAvailableItemsTest() throws Exception {
+        addDefaultUser("email@mail.ru");
+
+        ItemDto item1 = makeDefaultItemDto();
+        item1.setName("name item1");
+        item1.setDescription("description item1");
+        item1.setAvailable(true);
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(item1))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        ItemDto item2 = makeDefaultItemDto();
+        item2.setId(2L);
+        item2.setName("name item2");
+        item2.setDescription("description item2");
+        item2.setAvailable(true);
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(item2))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        ItemDto item3 = makeDefaultItemDto();
+        item3.setId(3L);
+        item3.setName("name item3");
+        item3.setDescription("description item3");
+        item3.setAvailable(false);
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(item3))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        get(defaultUri + "/search")
+                                .headers(headers)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .param("text", "item"))
+                .andReturn().getResponse();
+
+        assertEquals(List.of(item1, item2),
+                mapper.readValue(servletResponse.getContentAsString(), new TypeReference<List<ItemDto>>() {
+                }));
+    }
+
+    @Test
+    public void updateItemTest() throws Exception {
+        addDefaultUser("email@mail.ru");
+
+        ItemDto item1 = makeDefaultItemDto();
+        item1.setName("New item1");
+        item1.setDescription("item description");
+        item1.setAvailable(false);
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(item1))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        item1.setName(null);
+        item1.setDescription("New item description");
+        item1.setAvailable(true);
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        patch(defaultUri + "/1")
+                                .headers(headers)
+                                .content(mapper.writeValueAsString(item1))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        item1.setName("New item1");
+
+        assertEquals(HttpStatus.OK.value(), servletResponse.getStatus());
+        item1.setComments(null);
+        assertEquals(item1, mapper.readValue(servletResponse.getContentAsString(), ItemDto.class));
+    }
+
+    @Test
+    public void shouldBeExceptionForRequestWithNullValues() throws Exception {
+        addDefaultUser("email@mail.ru");
+
+        ItemDto item1 = makeDefaultItemDto();
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(item1))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        item1.setName(null);
+        item1.setDescription(null);
+        item1.setAvailable(null);
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        patch(defaultUri + "/1")
+                                .headers(headers)
+                                .content(mapper.writeValueAsString(item1))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), servletResponse.getStatus());
+    }
+
+    @Test
+    public void shouldBeExceptionWithWrongOwnerUpdatingItem() throws Exception {
+        UserDto userDto = addDefaultUser("email@mail.ru");
+        userDto.setEmail("newEmail@mail.ru");
+        mvc.perform(
+                post(String.format("http://localhost:%d/users", port))
+                        .content(mapper.writeValueAsString(userDto))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        ItemDto item1 = makeDefaultItemDto();
+        item1.setName("item1");
+        item1.setDescription("item description");
+        item1.setAvailable(false);
+
+        mvc.perform(
+                post(defaultUri)
+                        .headers(headers)
+                        .content(mapper.writeValueAsString(item1))
+                        .contentType(MediaType.APPLICATION_JSON));
+
+        item1.setName(null);
+        item1.setDescription("New item description");
+        item1.setAvailable(true);
+
+        headers.set("X-Sharer-User-Id", "2");
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        patch(defaultUri + "/1")
+                                .headers(headers)
+                                .content(mapper.writeValueAsString(item1))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        assertEquals(HttpStatus.FORBIDDEN.value(), servletResponse.getStatus());
+    }
 
     private HttpHeaders getDefaultHeader(Long ownerId) {
         HttpHeaders headers = new HttpHeaders();
@@ -113,258 +355,5 @@ public class ItemControllerTest {
                 .andReturn().getResponse();
 
         return mapper.readValue(servletResponse.getContentAsString(), UserDto.class);
-    }
-
-    @Test
-    public void addItemTest() throws Exception {
-        addDefaultUser("email@mail.ru");
-        ItemDto itemDto = makeDefaultItemDto();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        MockHttpServletResponse response = mvc.perform(
-                post(defaultUri)
-                                .headers(headers)
-                                .content(mapper.writeValueAsString(itemDto))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.CREATED.value(), response.getStatus());
-        itemDto.setComments(null);
-        assertEquals(itemDto, mapper.readValue(response.getContentAsString(), ItemDto.class));
-    }
-
-    @Test
-    public void shouldBeExceptionForAddItemWithoutOwner() throws Exception {
-        ItemDto itemDto = makeDefaultItemDto();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        post(defaultUri)
-                                .headers(headers)
-                                .content(mapper.writeValueAsString(itemDto))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
-    }
-
-    @Test
-    public void shouldBeExceptionForAddCommentWithoutCurrentOrPastBooking() throws Exception {
-        UserDto user = addDefaultUser("email@mail.ru");
-        UserDto booker = addDefaultUser("newEmail@mail.ru");
-        long userId = user.getId();
-        long bookerId = booker.getId();
-
-        ItemDto item = addItem(makeDefaultItemDto(), userId);
-        long itemId = item.getId();
-
-        BookingDto bookingDto = addBooking(makeDefaultBookingDtoRequest(itemId), bookerId);
-        setApproved(userId, bookingDto.getId());
-
-        CommentDto comment = CommentDto.builder().text("comment text").build();
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        post(defaultUri + "/" + itemId + "/comment")
-                                .content(mapper.writeValueAsString(comment))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .headers(getDefaultHeader(bookerId)))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), servletResponse.getStatus());
-    }
-
-    @Test
-    public void getItemTest() throws Exception {
-        addDefaultUser("email@mail.ru");
-        ItemDto itemDto = makeDefaultItemDto();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(itemDto))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        get(defaultUri + "/1")
-                                .headers(headers)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.OK.value(), servletResponse.getStatus());
-        assertEquals(itemDto, mapper.readValue(servletResponse.getContentAsString(), ItemDto.class));
-    }
-
-    @Test
-    public void shouldBeExceptionNotFoundItem() throws Exception {
-        addDefaultUser("email@mail.ru");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        get(defaultUri + "/1")
-                                .headers(headers)
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
-    }
-
-    @Test
-    public void searchingAvailableItemsTest() throws Exception {
-        addDefaultUser("email@mail.ru");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        ItemDto item1 = makeDefaultItemDto();
-        item1.setName("name item1");
-        item1.setDescription("description item1");
-        item1.setAvailable(true);
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(item1))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        ItemDto item2 = makeDefaultItemDto();
-        item2.setId(2L);
-        item2.setName("name item2");
-        item2.setDescription("description item2");
-        item2.setAvailable(true);
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(item2))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        ItemDto item3 = makeDefaultItemDto();
-        item3.setId(3L);
-        item3.setName("name item3");
-        item3.setDescription("description item3");
-        item3.setAvailable(false);
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(item3))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        get(defaultUri + "/search")
-                                .headers(headers)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .param("text", "item"))
-                .andReturn().getResponse();
-
-        assertEquals(List.of(item1, item2),
-                mapper.readValue(servletResponse.getContentAsString(), new TypeReference<List<ItemDto>>() {
-                }));
-    }
-
-    @Test
-    public void updateItemTest() throws Exception {
-        addDefaultUser("email@mail.ru");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        ItemDto item1 = makeDefaultItemDto();
-        item1.setName("New item1");
-        item1.setDescription("item description");
-        item1.setAvailable(false);
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(item1))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        item1.setName(null);
-        item1.setDescription("New item description");
-        item1.setAvailable(true);
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(defaultUri + "/1")
-                                .headers(headers)
-                                .content(mapper.writeValueAsString(item1))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        item1.setName("New item1");
-
-        assertEquals(HttpStatus.OK.value(), servletResponse.getStatus());
-        item1.setComments(null);
-        assertEquals(item1, mapper.readValue(servletResponse.getContentAsString(), ItemDto.class));
-    }
-
-    @Test
-    public void shouldBeExceptionForRequestWithNullValues() throws Exception {
-        addDefaultUser("email@mail.ru");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        ItemDto item1 = makeDefaultItemDto();
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(item1))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        item1.setName(null);
-        item1.setDescription(null);
-        item1.setAvailable(null);
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(defaultUri + "/1")
-                                .headers(headers)
-                                .content(mapper.writeValueAsString(item1))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), servletResponse.getStatus());
-    }
-
-    @Test
-    public void shouldBeExceptionWithWrongOwnerUpdatingItem() throws Exception {
-        UserDto userDto = addDefaultUser("email@mail.ru");
-        userDto.setEmail("newEmail@mail.ru");
-        mvc.perform(
-                post(String.format("http://localhost:%d/users", port))
-                        .content(mapper.writeValueAsString(userDto))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", "1");
-
-        ItemDto item1 = makeDefaultItemDto();
-        item1.setName("item1");
-        item1.setDescription("item description");
-        item1.setAvailable(false);
-
-        mvc.perform(
-                post(defaultUri)
-                        .headers(headers)
-                        .content(mapper.writeValueAsString(item1))
-                        .contentType(MediaType.APPLICATION_JSON));
-
-        item1.setName(null);
-        item1.setDescription("New item description");
-        item1.setAvailable(true);
-
-        headers.set("X-Sharer-User-Id", "2");
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        patch(defaultUri + "/1")
-                                .headers(headers)
-                                .content(mapper.writeValueAsString(item1))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), servletResponse.getStatus());
     }
 }

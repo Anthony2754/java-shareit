@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,46 +41,6 @@ public class ItemRequestControllerTest {
     @Autowired
     private ObjectMapper mapper;
     private final String defaultUri = String.format("http://localhost:%d/requests", port);
-
-    private ItemRequestDto addRequest(ItemRequestDto requestDto, long userId) throws Exception {
-        MockHttpServletResponse postResponse = mvc.perform(
-                        post(defaultUri)
-                                .content(mapper.writeValueAsString(requestDto))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .headers(getDefaultHeader(userId)))
-                .andReturn().getResponse();
-        requestDto = mapper.readValue(postResponse.getContentAsString(), ItemRequestDto.class);
-        requestDto.setItems(Set.of());
-
-        return requestDto;
-    }
-
-    private ItemRequestDto makeDefaultRequest() {
-        return ItemRequestDto.builder()
-                .description("Default request")
-                .build();
-    }
-
-    private UserDto addDefaultUser(String email) throws Exception {
-        UserDto userDto = UserDto.builder()
-                .name("User Name")
-                .email(email)
-                .build();
-
-        MockHttpServletResponse servletResponse = mvc.perform(
-                        post(String.format("http://localhost:%d/users", port))
-                                .content(mapper.writeValueAsString(userDto))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andReturn().getResponse();
-
-        return mapper.readValue(servletResponse.getContentAsString(), UserDto.class);
-    }
-
-    private HttpHeaders getDefaultHeader(Long userId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Sharer-User-Id", userId.toString());
-        return headers;
-    }
 
     @Test
     public void addRequestTest() throws Exception {
@@ -211,5 +171,45 @@ public class ItemRequestControllerTest {
         collection = mapper.readValue(getResponse.getContentAsString(), new TypeReference<>() {});
 
         assertEquals(List.of(requestDto), collection);
+    }
+
+    private ItemRequestDto addRequest(ItemRequestDto requestDto, long userId) throws Exception {
+        MockHttpServletResponse postResponse = mvc.perform(
+                        post(defaultUri)
+                                .content(mapper.writeValueAsString(requestDto))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .headers(getDefaultHeader(userId)))
+                .andReturn().getResponse();
+        requestDto = mapper.readValue(postResponse.getContentAsString(), ItemRequestDto.class);
+        requestDto.setItems(Set.of());
+
+        return requestDto;
+    }
+
+    private ItemRequestDto makeDefaultRequest() {
+        return ItemRequestDto.builder()
+                .description("Default request")
+                .build();
+    }
+
+    private UserDto addDefaultUser(String email) throws Exception {
+        UserDto userDto = UserDto.builder()
+                .name("User Name")
+                .email(email)
+                .build();
+
+        MockHttpServletResponse servletResponse = mvc.perform(
+                        post(String.format("http://localhost:%d/users", port))
+                                .content(mapper.writeValueAsString(userDto))
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        return mapper.readValue(servletResponse.getContentAsString(), UserDto.class);
+    }
+
+    private HttpHeaders getDefaultHeader(Long userId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Sharer-User-Id", userId.toString());
+        return headers;
     }
 }

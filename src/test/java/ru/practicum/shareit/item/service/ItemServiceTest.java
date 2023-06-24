@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.service;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -36,35 +36,6 @@ public class ItemServiceTest {
     private UserService userService;
     private ItemService itemService;
     private BookingService bookingService;
-
-    private BookingDtoRequest makeDefaultBookingDtoRequest(long itemId) {
-        return BookingDtoRequest.builder()
-                .itemId(itemId)
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().plusMinutes(1).plusDays(1).truncatedTo(ChronoUnit.SECONDS))
-                .build();
-    }
-
-    private CommentDto makeDefaultComment() {
-        return CommentDto.builder()
-                .text("default comment")
-                .build();
-    }
-
-    private ItemDto makeDefaultItem() {
-        return ItemDto.builder()
-                .name("default item")
-                .description("default item description")
-                .available(true)
-                .build();
-    }
-
-    private UserDto makeDefaultUser() {
-        return UserDto.builder()
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
 
     @Test
     public void addItemTest() {
@@ -161,5 +132,34 @@ public class ItemServiceTest {
                 itemService.getOwnerItems(userDto1.getId(), 0, Integer.MAX_VALUE));
         assertEquals(List.of(),
                 itemService.getOwnerItems(userDto2.getId(), 0, Integer.MAX_VALUE));
+    }
+
+    private BookingDtoRequest makeDefaultBookingDtoRequest(long itemId) {
+        return BookingDtoRequest.builder()
+                .itemId(itemId)
+                .start(LocalDateTime.now())
+                .end(LocalDateTime.now().plusMinutes(1).plusDays(1).truncatedTo(ChronoUnit.SECONDS))
+                .build();
+    }
+
+    private CommentDto makeDefaultComment() {
+        return CommentDto.builder()
+                .text("default comment")
+                .build();
+    }
+
+    private ItemDto makeDefaultItem() {
+        return ItemDto.builder()
+                .name("default item")
+                .description("default item description")
+                .available(true)
+                .build();
+    }
+
+    private UserDto makeDefaultUser() {
+        return UserDto.builder()
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
     }
 }

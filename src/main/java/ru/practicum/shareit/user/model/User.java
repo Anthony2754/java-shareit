@@ -27,7 +27,6 @@ public class User {
     private Long id;
     @Column(name = "user_name")
     private String name;
-    @Column(name = "email")
     private String email;
     @OneToMany(mappedBy = "owner")
     @ToString.Exclude

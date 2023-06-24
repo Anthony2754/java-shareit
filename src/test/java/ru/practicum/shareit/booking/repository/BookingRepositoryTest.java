@@ -1,7 +1,7 @@
-package ru.practicum.shareit.booking;
-
+package ru.practicum.shareit.booking.repository;
 
 import lombok.AllArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -33,36 +33,9 @@ public class BookingRepositoryTest {
     private ItemRepository itemRepository;
     private BookingRepository bookingRepository;
 
-    private Booking makeDefaultBooking(Item item, User booker) {
-        return Booking.builder()
-                .item(item)
-                .booker(booker)
-                .startTime(LocalDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.SECONDS))
-                .endTime(LocalDateTime.now().plusMinutes(1).plusDays(1).truncatedTo(ChronoUnit.SECONDS))
-                .build();
-    }
-
-    private Item makeDefaultItem(User owner) {
-        return Item.builder()
-                .owner(owner)
-                .name("Item name")
-                .description("Item description")
-                .available(true)
-                .build();
-    }
-
-    private User makeDefaultUser() {
-        return User.builder()
-                .name("User Name")
-                .email("user@mail.ru")
-                .build();
-    }
-
     @Test
     public void getAllByBookerIdOrOwnerIdAndOrderByStartTimeDescTest() {
-        User owner1 = userRepository.save(makeDefaultUser());
-        Item item1 = makeDefaultItem(owner1);
-        item1 = itemRepository.save(item1);
+        Item item1 = getItem();
 
         User booker = makeDefaultUser();
         booker.setEmail("newEmail@mail.ru");
@@ -90,9 +63,7 @@ public class BookingRepositoryTest {
 
     @Test
     public void getAllByBookerIdOrOwnerIdAndApprovedOrderByStartTimeDescTest() {
-        User owner1 = userRepository.save(makeDefaultUser());
-        Item item1 = makeDefaultItem(owner1);
-        item1 = itemRepository.save(item1);
+        Item item1 = getItem();
 
         User booker = makeDefaultUser();
         booker.setEmail("email@mail.ru");
@@ -121,9 +92,7 @@ public class BookingRepositoryTest {
 
     @Test
     public void getPastBookingsTest() {
-        User owner1 = userRepository.save(makeDefaultUser());
-        Item item1 = makeDefaultItem(owner1);
-        item1 = itemRepository.save(item1);
+        Item item1 = getItem();
 
         User booker = makeDefaultUser();
         booker.setEmail("newEmail@mail.ru");
@@ -153,9 +122,7 @@ public class BookingRepositoryTest {
 
     @Test
     public void getCurrentBookingsTest() {
-        User owner1 = userRepository.save(makeDefaultUser());
-        Item item1 = makeDefaultItem(owner1);
-        item1 = itemRepository.save(item1);
+        Item item1 = getItem();
 
         User booker = makeDefaultUser();
         booker.setEmail("newEmail@mail.ru");
@@ -243,5 +210,37 @@ public class BookingRepositoryTest {
         bookingRepository.save(booking2);
         assertEquals(List.of(booking2),
                 bookingRepository.getAllByItemOwnerId(owner2.getId()));
+    }
+
+    private Item getItem() {
+        User owner1 = userRepository.save(makeDefaultUser());
+        Item item1 = makeDefaultItem(owner1);
+        item1 = itemRepository.save(item1);
+        return item1;
+    }
+
+    private Booking makeDefaultBooking(Item item, User booker) {
+        return Booking.builder()
+                .item(item)
+                .booker(booker)
+                .startTime(LocalDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.SECONDS))
+                .endTime(LocalDateTime.now().plusMinutes(1).plusDays(1).truncatedTo(ChronoUnit.SECONDS))
+                .build();
+    }
+
+    private Item makeDefaultItem(User owner) {
+        return Item.builder()
+                .owner(owner)
+                .name("Item name")
+                .description("Item description")
+                .available(true)
+                .build();
+    }
+
+    private User makeDefaultUser() {
+        return User.builder()
+                .name("User Name")
+                .email("user@mail.ru")
+                .build();
     }
 }

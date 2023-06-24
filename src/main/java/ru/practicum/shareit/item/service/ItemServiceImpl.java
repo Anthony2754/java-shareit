@@ -49,11 +49,7 @@ public class ItemServiceImpl implements ItemService {
         ItemRequest request;
         Long requestId = itemDto.getRequestId();
 
-        if (requestId != null) {
-            request = itemRequestService.getRequest(requestId);
-        } else {
-            request = null;
-        }
+        request = (requestId != null) ? itemRequestService.getRequest(requestId) : null;
 
         item = itemMapper.mapToItemModel(itemDto, userService.getUserById(ownerId), request);
         item.setId(null);

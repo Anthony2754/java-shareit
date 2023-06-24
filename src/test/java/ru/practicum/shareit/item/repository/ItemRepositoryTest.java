@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.repository;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -26,23 +26,6 @@ public class ItemRepositoryTest {
 
     private UserRepository userRepository;
     private ItemRepository itemRepository;
-
-
-    private Item makeDefaultItem(User owner) {
-        return Item.builder()
-                .owner(owner)
-                .name("Item name")
-                .description("Item description")
-                .available(true)
-                .build();
-    }
-
-    private User makeDefaultUser() {
-        return User.builder()
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
 
     @Test
     public void existsItemByIdAndTrueAvailableTest() {
@@ -109,5 +92,21 @@ public class ItemRepositoryTest {
 
         itemRepository.deleteAllByOwner(user);
         assertEquals(List.of(), itemRepository.findAllByOwnerId(userId, Pageable.unpaged()).getContent());
+    }
+
+    private Item makeDefaultItem(User owner) {
+        return Item.builder()
+                .owner(owner)
+                .name("Item name")
+                .description("Item description")
+                .available(true)
+                .build();
+    }
+
+    private User makeDefaultUser() {
+        return User.builder()
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
     }
 }

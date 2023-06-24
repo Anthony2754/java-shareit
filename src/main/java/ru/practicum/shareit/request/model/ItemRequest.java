@@ -27,9 +27,7 @@ public class ItemRequest {
     @ManyToOne
     @JoinColumn(name = "requester", referencedColumnName = "user_id")
     private User requester;
-    @Column(name = "description")
     private String description;
-    @Column(name = "created")
     private LocalDateTime created;
     @OneToMany(mappedBy = "request")
     @ToString.Exclude

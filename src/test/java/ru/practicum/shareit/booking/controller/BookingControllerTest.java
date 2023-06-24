@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,102 +43,7 @@ public class BookingControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-
-
     private final String defaultUri = String.format("http://localhost:%d/bookings", port);
-
-    private HttpHeaders getDefaultHeader(Long userId) {
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("X-Sharer-User-Id", userId.toString());
-        return httpHeaders;
-    }
-
-    private Collection<BookingDto> getBookingsOwnerAndStatus(Long ownerId, String state) throws Exception {
-
-        MockHttpServletResponse servletResponse = mockMvc.perform(
-                        get(defaultUri + "/owner")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .headers(getDefaultHeader(ownerId))
-                                .param("state", state)
-                                .param("from", ((Integer) 0).toString())
-                                .param("size", ((Integer) Integer.MAX_VALUE).toString()))
-                        .andReturn().getResponse();
-
-        return objectMapper.readValue(servletResponse.getContentAsString(), new TypeReference<>() {});
-    }
-
-    private Collection<BookingDto> getBookingsByBookerAndStatus(Long booker, String state) throws Exception {
-
-        MockHttpServletResponse servletResponse = mockMvc.perform(get(defaultUri)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .headers(getDefaultHeader(booker))
-                                .param("state", state)
-                                .param("from", ((Integer) 0).toString())
-                                .param("size", ((Integer) Integer.MAX_VALUE).toString()))
-                                .andReturn().getResponse();
-
-        return objectMapper.readValue(servletResponse.getContentAsString(), new TypeReference<>() {});
-    }
-
-    private BookingDto setApproved(long requesterId, long bookingId, Boolean approved) throws Exception {
-
-        MockHttpServletResponse servletResponse = mockMvc.perform(patch(defaultUri + "/" + bookingId)
-                                .headers(getDefaultHeader(requesterId))
-                                .param("approved", approved.toString()))
-                                .andReturn().getResponse();
-
-        return objectMapper.readValue(servletResponse.getContentAsString(), BookingDto.class);
-    }
-
-    private BookingDto addBooking(BookingDtoRequest bookingDtoRequest, long bookerId) throws Exception {
-
-        MockHttpServletResponse servletResponse = mockMvc.perform(post(defaultUri)
-                                .content(objectMapper.writeValueAsString(bookingDtoRequest))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .headers(getDefaultHeader(bookerId)))
-                                .andReturn().getResponse();
-
-        return objectMapper.readValue(servletResponse.getContentAsString(), BookingDto.class);
-    }
-
-    private BookingDtoRequest makeDefaultBookingDtoRequest(long itemId) {
-        return BookingDtoRequest.builder()
-                .start(LocalDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.SECONDS))
-                .end(LocalDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS))
-                .itemId(itemId)
-                .build();
-    }
-
-    private ItemDto addDefaultItem(long ownerId) throws Exception {
-        ItemDto itemDto = ItemDto.builder()
-                .name("Item name")
-                .description("Item description")
-                .available(true)
-                .build();
-
-        MockHttpServletResponse servletResponse = mockMvc.perform(post(String.format("http://localhost:%d/items", port))
-                                .content(objectMapper.writeValueAsString(itemDto))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .headers(getDefaultHeader(ownerId)))
-                                .andReturn().getResponse();
-
-        return objectMapper.readValue(servletResponse.getContentAsString(), ItemDto.class);
-    }
-
-    private UserDto addDefaultUser(String email) throws Exception {
-        UserDto userDto = UserDto.builder()
-                .name("User Name")
-                .email(email)
-                .build();
-
-        MockHttpServletResponse servletResponse = mockMvc.perform(post(String.format("http://localhost:%d/users", port))
-                                .content(objectMapper.writeValueAsString(userDto))
-                                .contentType(MediaType.APPLICATION_JSON))
-                                .andReturn().getResponse();
-
-        return objectMapper.readValue(servletResponse.getContentAsString(), UserDto.class);
-    }
 
     @Test
     public void addBookingTest() throws Exception {
@@ -348,5 +253,98 @@ public class BookingControllerTest {
                 .andReturn().getResponse();
 
         assertEquals(HttpStatus.NOT_FOUND.value(), servletResponse.getStatus());
+    }
+
+    private HttpHeaders getDefaultHeader(Long userId) {
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("X-Sharer-User-Id", userId.toString());
+        return httpHeaders;
+    }
+
+    private Collection<BookingDto> getBookingsOwnerAndStatus(Long ownerId, String state) throws Exception {
+
+        MockHttpServletResponse servletResponse = mockMvc.perform(
+                        get(defaultUri + "/owner")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .headers(getDefaultHeader(ownerId))
+                                .param("state", state)
+                                .param("from", ((Integer) 0).toString())
+                                .param("size", ((Integer) Integer.MAX_VALUE).toString()))
+                .andReturn().getResponse();
+
+        return objectMapper.readValue(servletResponse.getContentAsString(), new TypeReference<>() {});
+    }
+
+    private Collection<BookingDto> getBookingsByBookerAndStatus(Long booker, String state) throws Exception {
+
+        MockHttpServletResponse servletResponse = mockMvc.perform(get(defaultUri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .headers(getDefaultHeader(booker))
+                        .param("state", state)
+                        .param("from", ((Integer) 0).toString())
+                        .param("size", ((Integer) Integer.MAX_VALUE).toString()))
+                .andReturn().getResponse();
+
+        return objectMapper.readValue(servletResponse.getContentAsString(), new TypeReference<>() {});
+    }
+
+    private BookingDto setApproved(long requesterId, long bookingId, Boolean approved) throws Exception {
+
+        MockHttpServletResponse servletResponse = mockMvc.perform(patch(defaultUri + "/" + bookingId)
+                        .headers(getDefaultHeader(requesterId))
+                        .param("approved", approved.toString()))
+                .andReturn().getResponse();
+
+        return objectMapper.readValue(servletResponse.getContentAsString(), BookingDto.class);
+    }
+
+    private BookingDto addBooking(BookingDtoRequest bookingDtoRequest, long bookerId) throws Exception {
+
+        MockHttpServletResponse servletResponse = mockMvc.perform(post(defaultUri)
+                        .content(objectMapper.writeValueAsString(bookingDtoRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .headers(getDefaultHeader(bookerId)))
+                .andReturn().getResponse();
+
+        return objectMapper.readValue(servletResponse.getContentAsString(), BookingDto.class);
+    }
+
+    private BookingDtoRequest makeDefaultBookingDtoRequest(long itemId) {
+        return BookingDtoRequest.builder()
+                .start(LocalDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.SECONDS))
+                .end(LocalDateTime.now().plusDays(1).truncatedTo(ChronoUnit.SECONDS))
+                .itemId(itemId)
+                .build();
+    }
+
+    private ItemDto addDefaultItem(long ownerId) throws Exception {
+        ItemDto itemDto = ItemDto.builder()
+                .name("Item name")
+                .description("Item description")
+                .available(true)
+                .build();
+
+        MockHttpServletResponse servletResponse = mockMvc.perform(post(String.format("http://localhost:%d/items", port))
+                        .content(objectMapper.writeValueAsString(itemDto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .headers(getDefaultHeader(ownerId)))
+                .andReturn().getResponse();
+
+        return objectMapper.readValue(servletResponse.getContentAsString(), ItemDto.class);
+    }
+
+    private UserDto addDefaultUser(String email) throws Exception {
+        UserDto userDto = UserDto.builder()
+                .name("User Name")
+                .email(email)
+                .build();
+
+        MockHttpServletResponse servletResponse = mockMvc.perform(post(String.format("http://localhost:%d/users", port))
+                        .content(objectMapper.writeValueAsString(userDto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andReturn().getResponse();
+
+        return objectMapper.readValue(servletResponse.getContentAsString(), UserDto.class);
     }
 }

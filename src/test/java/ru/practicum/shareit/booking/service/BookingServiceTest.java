@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -39,29 +39,6 @@ public class BookingServiceTest {
     private UserService userService;
     private ItemService itemService;
     private BookingService bookingService;
-
-    private BookingDtoRequest makeDefaultBookingDtoRequest(long itemId) {
-        return BookingDtoRequest.builder()
-                .itemId(itemId)
-                .start(LocalDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.SECONDS))
-                .end(LocalDateTime.now().plusMinutes(1).plusDays(1).truncatedTo(ChronoUnit.SECONDS))
-                .build();
-    }
-
-    private ItemDto makeDefaultItem() {
-        return ItemDto.builder()
-                .name("Item name")
-                .description("Item description")
-                .available(true)
-                .build();
-    }
-
-    private UserDto makeDefaultUser() {
-        return UserDto.builder()
-                .name("User Name")
-                .email("user@mail.ru")
-                .build();
-    }
 
     @Test
     public void addBookingTest() {
@@ -423,5 +400,28 @@ public class BookingServiceTest {
 
         assertThrows(ValidationException.class,
                 () -> bookingService.setApproval(booking.getId(), false, user.getId()));
+    }
+
+    private BookingDtoRequest makeDefaultBookingDtoRequest(long itemId) {
+        return BookingDtoRequest.builder()
+                .itemId(itemId)
+                .start(LocalDateTime.now().plusMinutes(1).truncatedTo(ChronoUnit.SECONDS))
+                .end(LocalDateTime.now().plusMinutes(1).plusDays(1).truncatedTo(ChronoUnit.SECONDS))
+                .build();
+    }
+
+    private ItemDto makeDefaultItem() {
+        return ItemDto.builder()
+                .name("Item name")
+                .description("Item description")
+                .available(true)
+                .build();
+    }
+
+    private UserDto makeDefaultUser() {
+        return UserDto.builder()
+                .name("User Name")
+                .email("user@mail.ru")
+                .build();
     }
 }

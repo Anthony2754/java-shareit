@@ -32,9 +32,7 @@ public class Item {
     private User owner;
     @Column(name = "item_name")
     private String name;
-    @Column(name = "description")
     private String description;
-    @Column(name = "available")
     private Boolean available;
     @ManyToOne
     @JoinColumn(name = "for_request", referencedColumnName = "request_id")

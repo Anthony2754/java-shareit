@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.service;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -24,13 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class UserServiceTest {
 
     private UserService service;
-
-    private UserDto makeDefaultUser() {
-        return UserDto.builder()
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
 
     @Test
     public void deleteUserTest() {
@@ -71,5 +64,12 @@ public class UserServiceTest {
     @Test
     public void shouldBeExceptionForDeleteNonExistentUser() {
         assertThrows(NotFoundException.class, () -> service.deleteUserById(1L));
+    }
+
+    private UserDto makeDefaultUser() {
+        return UserDto.builder()
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
     }
 }

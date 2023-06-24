@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.repository;
 
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -29,21 +29,6 @@ public class ItemRequestRepositoryTest {
     private UserRepository userRepository;
     private ItemRequestRepository requestRepository;
 
-    private User makeDefaultUser() {
-        return User.builder()
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
-
-    private ItemRequest makeDefaultRequest(User requester) {
-        return ItemRequest.builder()
-                .requester(requester)
-                .description("Description request")
-                .created(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
-                .build();
-    }
-
     @Test
     public void findAllByRequesterIdOrderByCreatedDescTest() {
         User requester = makeDefaultUser();
@@ -73,5 +58,20 @@ public class ItemRequestRepositoryTest {
         assertEquals(List.of(request1),
                 requestRepository.findAllByRequesterIdNotOrderByCreatedDesc(
                         requester2.getId(), Pageable.unpaged()).getContent());
+    }
+
+    private ItemRequest makeDefaultRequest(User requester) {
+        return ItemRequest.builder()
+                .requester(requester)
+                .description("Description request")
+                .created(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
+                .build();
+    }
+
+    private User makeDefaultUser() {
+        return User.builder()
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
     }
 }

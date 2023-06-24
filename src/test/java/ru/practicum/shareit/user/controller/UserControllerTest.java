@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,14 +36,6 @@ public class UserControllerTest {
     @Autowired
     private ObjectMapper mapper;
     private final String defaultUri = String.format("http://localhost:%d/users", port);
-
-    private UserDto makeDefaultUserDto() {
-        return UserDto.builder()
-                .id(1L)
-                .name("User Name")
-                .email("email@mail.ru")
-                .build();
-    }
 
     @Test
     public void addUserTest() throws Exception {
@@ -234,5 +226,13 @@ public class UserControllerTest {
                 .andReturn().getResponse();
 
         assertEquals(HttpStatus.CONFLICT.value(), response.getStatus());
+    }
+
+    private UserDto makeDefaultUserDto() {
+        return UserDto.builder()
+                .id(1L)
+                .name("User Name")
+                .email("email@mail.ru")
+                .build();
     }
 }

@@ -17,9 +17,8 @@ import java.util.Collection;
 @Slf4j
 public class ItemController {
 
-    private final ItemService itemService;
     private static final String USER_ID = "X-Sharer-User-Id";
-
+    private final ItemService itemService;
 
     @PostMapping
     public ResponseEntity<ItemDto> addItem(@RequestHeader(name = USER_ID) Long ownerId,

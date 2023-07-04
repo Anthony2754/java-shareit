@@ -13,8 +13,8 @@ import java.util.Collection;
 @RequestMapping(path = "/requests")
 public class ItemRequestController {
 
-    private final ItemRequestService itemRequestService;
     private static final String USER_ID = "X-Sharer-User-Id";
+    private final ItemRequestService itemRequestService;
 
     @PostMapping
     public ResponseEntity<ItemRequestDto> addItemRequest(@RequestHeader(name = USER_ID) Long requesterId,

@@ -15,8 +15,8 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class BookingController {
 
-    private final BookingService bookingService;
     private static final String USER_ID = "X-Sharer-User-Id";
+    private final BookingService bookingService;
 
     @PostMapping
     public ResponseEntity<BookingDto> addBooking(

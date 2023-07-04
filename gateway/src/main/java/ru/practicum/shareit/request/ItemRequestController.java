@@ -19,8 +19,8 @@ import javax.validation.constraints.PositiveOrZero;
 @RequiredArgsConstructor
 public class ItemRequestController {
 
-    private final RequestClient requestClient;
     private static final String USER_ID = "X-Sharer-User-Id";
+    private final RequestClient requestClient;
 
     @PostMapping
     public ResponseEntity<Object> addItemRequest(

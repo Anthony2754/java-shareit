@@ -20,8 +20,9 @@ import javax.validation.constraints.PositiveOrZero;
 @Slf4j
 @Validated
 public class BookingController {
-    private final BookingClient bookingClient;
+
     private static final String USER_ID = "X-Sharer-User-Id";
+    private final BookingClient bookingClient;
 
     @PostMapping
     public ResponseEntity<Object> addBooking(
@@ -41,8 +42,8 @@ public class BookingController {
     public ResponseEntity<Object> getBookingsBookerAndStatus(
             @RequestHeader(USER_ID) Long userId,
             @RequestParam(name = "state", defaultValue = "all") String stateParam,
-            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-            @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+            @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
+            @Positive @RequestParam(defaultValue = "10") Integer size) {
 
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
@@ -54,8 +55,8 @@ public class BookingController {
     public ResponseEntity<Object> getBookingsOwnerAndStatus(
             @RequestHeader(USER_ID) Long userId,
             @RequestParam(name = "state", defaultValue = "all") String stateParam,
-            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-            @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+            @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
+            @Positive @RequestParam(defaultValue = "10") Integer size) {
 
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
